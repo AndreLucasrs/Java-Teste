@@ -1,6 +1,8 @@
+package br.com.alura.teste;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
 public class TesteAutomatizado {
@@ -12,10 +14,11 @@ public class TesteAutomatizado {
     	//Teste com firefox
     	//System.setProperty("webdriver.gecko.driver", "C:\\geckodriver.exe");
     	//Teste com chrome
-    	System.setProperty("webdriver.gecko.driver", "C:\\chromedriver.exe");
+    	System.setProperty("webdriver.chrome.driver", "C:\\chromedriver.exe");
         // abre firefox
-        WebDriver driver = new FirefoxDriver();
-
+        //WebDriver driver = new FirefoxDriver();
+        // abre chrome
+        WebDriver driver = new ChromeDriver();
         // acessa o site do google
         driver.get("http://www.google.com.br/");
 
