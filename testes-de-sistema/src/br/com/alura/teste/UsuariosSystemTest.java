@@ -1,12 +1,11 @@
 package br.com.alura.teste;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 //Para o teste, rode a aplicação antes
@@ -17,77 +16,73 @@ import org.openqa.selenium.chrome.ChromeDriver;
 //abra a aplicação no http://localhost:8080/
 //e agora pode roda os teste
 public class UsuariosSystemTest {
-	
+
 	private ChromeDriver driver;
-	
+	private UsuariosPage usuarios;
+
 	@Before
-	public void inicializa(){
-		
+	public void inicializa() {
+
 		System.setProperty("webdriver.chrome.driver", "C:\\chromedriver.exe");
 		driver = new ChromeDriver();
-		driver.get("http://localhost:8080");
-		driver.findElement(By.linkText("Usuários")).click();
-		driver.findElement(By.linkText("Novo Usuário")).click();
+		//Limpa o Banco
+		driver.get("http://localhost:8080/apenas-teste/limpa");
+		usuarios = new UsuariosPage(driver);
+		usuarios.paginaInicial();
+		usuarios.visita();
+
 	}
-	
+
 	@After
 	public void finaliza() {
-		
+
 		driver.close();
 	}
 
 	@Test
 	public void deveAdicionarUmUsuario() {
-		
-		//Buscar o name que tem no input
-		WebElement nome = driver.findElement(By.name("usuario.nome"));
-		WebElement email = driver.findElement(By.name("usuario.email"));
-		//seta o nome no input
-        nome.sendKeys("Lucas");
-        email.sendKeys("lucas@gmail.com");
-        
-        //1 Opcao
-        //busca o id que tem no input
-        WebElement botaoSalvar = driver.findElement(By.id("btnSalvar"));
-        //clica no botao salvar
-        botaoSalvar.click();
-        
-        //2 Opcao
-        //ele ira da o submit atraves do proprio input
-        //nome.submit();
-        //email.submit();
-        
-        //esse getPageSource devolve o codigo fonta que esta sendo exibida pelo navegador
-        //pega o codigo fonte e verifica se contem o Lucas
-        boolean achouNome = driver.getPageSource().contains("Lucas");
-        boolean achouEmail = driver.getPageSource().contains("lucas@gmail.com");
-        
-        assertTrue(achouNome);
-        assertTrue(achouEmail);
+
+		usuarios.novo().cadastra("Lucas", "lucas@gmail.com");
+
+		assertTrue(usuarios.existeNaListagem("Lucas", "lucas@gmail.com"));
 	}
-	
+
 	@Test
 	public void naoDeveAdicionarUmUsuarioSemNome() {
-		
-		driver.get("http://localhost:8080/usuarios/new");
-		WebElement email = driver.findElement(By.name("usuario.email"));
-		email.sendKeys("maryana@gmail.com");
-		
-		email.submit();
-		
-		assertTrue(driver.getPageSource().contains("Nome obrigatorio!"));
-		
+
+		usuarios.novo().tentaCadastraComUmCampoPreenchido("maryana@gmail.com");
+
+		assertTrue(usuarios.existeErroAoTentaCadastraComApenasUmaInformacao());
+
 	}
-	
+
 	@Test
 	public void naoDeveAdicionarUmUsuarioSemNomeOuEmail() {
-		
-		driver.get("http://localhost:8080/usuarios/new");
-		
-		WebElement botaoSalvar = driver.findElement(By.id("btnSalvar"));
-		botaoSalvar.click();
-		
-		assertTrue(driver.getPageSource().contains("Nome obrigatorio!"));
-		assertTrue(driver.getPageSource().contains("E-mail obrigatorio!"));
+
+		usuarios.novo().tentaCadastraSemCampoPreenchido();
+
+		assertTrue(usuarios.mostraMensagemDeCamposObrigatorio());
 	}
+
+	@Test
+	public void deveDeletarUmUsuario() {
+
+		usuarios.novo().cadastra("ze", "ze@gmail.com");
+		assertTrue(usuarios.existeNaListagem("ze", "ze@gmail.com"));
+
+		usuarios.deletaUsuarioNaPosicao(1);
+
+		assertFalse(usuarios.existeNaListagem("ze", "ze@gmail.com"));
+	}
+
+	@Test
+	public void deveAlterarUmUsuario() {
+
+		usuarios.novo().cadastra("Marvin", "marvin@gmail.com");
+		usuarios.altera(1).para("Bender", "bender@gmail.com");
+
+		assertFalse(usuarios.existeNaListagem("Marvin", "marvin@gmail.com"));
+		assertTrue(usuarios.existeNaListagem("Bender", "bender@gmail.com"));
+	}
+
 }
